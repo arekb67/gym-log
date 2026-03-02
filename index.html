@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Arek's Training Log</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --accent: #e8ff3a;
+    --accent2: #ff6b35;
+    --text: #f0f0f0;
+    --muted: #666;
+    --done: #3aff8a;
+    --danger: #ff3a3a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    height: 100%;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; height: 100vh; overflow-y: auto; flex-direction: column; }
+  .screen.active { display: flex; }
+
+  /* ── HOME SCREEN ── */
+  #home {
+    padding: 0;
+    background: var(--bg);
+  }
+
+  .home-header {
+    padding: 52px 24px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .home-header h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 36px;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .home-header h1 span { color: var(--accent); }
+
+  .home-header p {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+    letter-spacing: 0.5px;
+  }
+
+  .week-list {
+    flex: 1;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cycle-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 4px 4px;
+  }
+
+  .week-btn {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    width: 100%;
+    text-align: left;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .week-btn.deload { opacity: 0.6; }
+  .week-btn.complete { border-color: var(--done); }
+  .week-btn.current { border-color: var(--accent); }
+
+  .week-btn:active { opacity: 0.7; }
+
+  .week-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--muted);
+    line-height: 1;
+    min-width: 32px;
+  }
+
+  .week-btn.current .week-num { color: var(--accent); }
+  .week-btn.complete .week-num { color: var(--done); }
+
+  .week-info { flex: 1; }
+  .week-type {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .week-meta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .week-tick {
+    font-size: 20px;
+    opacity: 0;
+  }
+  .week-btn.complete .week-tick { opacity: 1; }
+
+  /* ── SESSION SCREEN ── */
+  #session {
+    background: var(--bg);
+  }
+
+  .session-header {
+    padding: 52px 20px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .back-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 18px;
+    cursor: pointer;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  .session-title { flex: 1; }
+
+  .session-title h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 26px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.3px;
+    line-height: 1;
+  }
+
+  .session-title h2 span { color: var(--accent); }
+
+  .session-title p {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Exercise navigator */
+  .ex-nav {
+    display: flex;
+    gap: 6px;
+    padding: 12px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    flex-shrink: 0;
+    scrollbar-width: none;
+  }
+  .ex-nav::-webkit-scrollbar { display: none; }
+
+  .ex-pill {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+
+  .ex-pill.active {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+  }
+
+  .ex-pill.done-pill {
+    border-color: var(--done);
+    color: var(--done);
+  }
+
+  /* Exercise card */
+  .ex-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .ex-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 42px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .sets-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .set-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .set-card.set-done { border-color: var(--done); }
+
+  .set-left {
+    flex: 1;
+  }
+
+  .set-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .set-weight {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 34px;
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--accent);
+  }
+
+  .set-target {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  /* Rep counter */
+  .rep-counter {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--surface2);
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .rep-btn {
+    width: 44px;
+    height: 52px;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 24px;
+    cursor: pointer;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    transition: background 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .rep-btn:active { background: var(--border); }
+
+  .rep-display {
+    width: 48px;
+    text-align: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--text);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    line-height: 52px;
+  }
+
+  .rep-display.has-reps { color: var(--done); }
+
+  /* Pull-ups special card */
+  .pullup-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .pullup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .pullup-target-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .pullup-target-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--accent2);
+    line-height: 1;
+  }
+
+  .pullup-band {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  .pullup-sets {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .pullup-set {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .pullup-set-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    min-width: 42px;
+  }
+
+  .pullup-total {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .pullup-total-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+  }
+
+  .pullup-total-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 24px;
+    font-weight: 900;
+  }
+
+  /* Navigation footer */
+  .session-footer {
+    padding: 16px 20px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .nav-btn {
+    flex: 1;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .nav-btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+  }
+
+  .nav-btn.finish-btn {
+    background: var(--done);
+    border-color: var(--done);
+    color: #000;
+  }
+
+  .nav-btn:active { opacity: 0.75; }
+  .nav-btn:disabled { opacity: 0.3; }
+
+  /* Done screen */
+  #done {
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .done-icon {
+    font-size: 72px;
+    animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  @keyframes pop {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+
+  .done-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 52px;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 1;
+    color: var(--done);
+  }
+
+  .done-sub {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .done-summary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    width: 100%;
+    text-align: left;
+  }
+
+  .done-summary h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row .lift-name { color: var(--muted); }
+  .summary-row .lift-sets { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; }
+
+  .done-home-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    background: var(--accent);
+    border: none;
+    color: #000;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════ HOME -->
+<div id="home" class="screen active">
+  <div class="home-header">
+    <h1>Arek's<br><span>Training</span> Log</h1>
+    <p>12-week 5/3/1 programme · Mon / Wed / Fri</p>
+  </div>
+  <div class="week-list" id="weekList"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ SESSION -->
+<div id="session" class="screen">
+  <div class="session-header">
+    <button class="back-btn" onclick="goHome()">←</button>
+    <div class="session-title">
+      <h2 id="sessionTitle">Week <span>1</span></h2>
+      <p id="sessionSub"></p>
+    </div>
+  </div>
+  <div class="ex-nav" id="exNav"></div>
+  <div class="ex-content" id="exContent"></div>
+  <div class="session-footer" id="sessionFooter"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ DONE -->
+<div id="done" class="screen">
+  <div class="done-icon">💪</div>
+  <div class="done-title">Session<br>Done</div>
+  <div class="done-sub" id="doneSub"></div>
+  <div class="done-summary" id="doneSummary"></div>
+  <button class="done-home-btn" onclick="goHome()">Back to weeks</button>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// PROGRAMME DATA
+// ══════════════════════════════════════════════════════════════════
+const WEEKS = [
+  // C1 – TM: Sq=77 B=63 DL=72 OHP=36
+  { w:1,  cycle:1, type:"5s Week",     deload:false,
+    lifts:[
+      { name:"Squat",     sets:[{kg:50,target:"5"},{kg:57.5,target:"5"},{kg:65,target:"5+"}] },
+      { name:"Bench",     sets:[{kg:40,target:"5"},{kg:47.5,target:"5"},{kg:52.5,target:"5+"}] },
+      { name:"Deadlift",  sets:[{kg:47.5,target:"5"},{kg:55,target:"5"},{kg:60,target:"5+"}] },
+      { name:"OHP",       sets:[{kg:22.5,target:"5"},{kg:27.5,target:"5"},{kg:30,target:"5+"}] },
+    ],
+    pullups: { sets:5, targetTotal:25, note:"5×5 reps", band:"Thick band all sets" }
+  },
+  { w:2,  cycle:1, type:"3s Week",     deload:false,
+    lifts:[
+      { name:"Squat",     sets:[{kg:55,target:"3"},{kg:62.5,target:"3"},{kg:70,target:"3+"}] },
+      { name:"Bench",     sets:[{kg:45,target:"3"},{kg:50,target:"3"},{kg:57.5,target:"3+"}] },
+      { name:"Deadlift",  sets:[{kg:50,target:"3"},{kg:57.5,target:"3"},{kg:65,target:"3+"}] },
+      { name:"OHP",       sets:[{kg:25,target:"3"},{kg:30,target:"3"},{kg:32.5,target:"3+"}] },
+    ],
+    pullups: { sets:5, targetTotal:30, note:"5×6 reps, aim +1 vs Wk1", band:"Thick band — lighter for last 1-2 sets if easy" }
+  },
+  { w:3,  cycle:1, type:"5/3/1 Week",  deload:false,
+    lifts:[
+      { name:"Squat",     sets:[{kg:57.5,target:"5"},{kg:65,target:"3"},{kg:72.5,target:"1+"}] },
+      { name:"Bench",     sets:[{kg:47.5,target:"5"},{kg:52.5,target:"3"},{kg:60,target:"1+"}] },
+      { name:"Deadlift",  sets:[{kg:55,target:"5"},{kg:60,target:"3"},{kg:67.5,target:"1+"}] },
+      { name:"OHP",       sets:[{kg:27.5,target:"5"},{kg:30,target:"3"},{kg:35,target:"1+"}] },
+    ],
+    pullups: { sets:5, targetTotal:35, note:"35 total reps", band:"Try last set bodyweight if strong" }
+  },
+  { w:4,  cycle:1, type:"Deload",      deload:true,
+    lifts:[
+      { name:"Squat",     sets:[{kg:30,target:"5"},{kg:37.5,target:"5"},{kg:45,target:"5"}] },
+      { name:"Bench",     sets:[{kg:25,target:"5"},{kg:32.5,target:"5"},{kg:37.5,target:"5"}] },
+      { name:"Deadlift",  sets:[{kg:30,target:"5"},{kg:35,target:"5"},{kg:42.5,target:"5"}] },
+      { name:"OHP",       sets:[{kg:15,target:"5"},{kg:17.5,target:"5"},{kg:22.5,target:"5"}] },
+    ],
+    pullups: { sets:3, targetTotal:15, note:"3×5 easy", band:"Thick band, comfortable pace" }
+  },
+  // C2 – TM: Sq=90 B=75 DL=87.5 OHP=42.5
+  { w:5,  cycle:2, type:"5s Week",     deload:false,
+    lifts:[
+      { name:"Squat",     sets:[{kg:57.5,target:"5"},{kg:67.5,target:"5"},{kg:77.5,target:"5+"}] },
+      { name:"Bench",     sets:[{kg:50,target:"5"},{kg:55,target:"5"},{kg:65,target:"5+"}] },
+      { name:"Deadlift",  sets:[{kg:57.5,target:"5"},{kg:65,target:"5"},{kg:75,target:"5+"}] },
+      { name:"OHP",       sets:[{kg:27.5,target:"5"},{kg:32.5,target:"5"},{kg:35,target:"5+"}] },
+    ],
+    pullups: { sets:5, targetTotal:30, note:"5×6 reps", band:"Medium band all sets" }
+  },
+  { w:6,  cycle:2, type:"3s Week",     deload:false,
+    lifts:[
+      { name:"Squat",     sets:[{kg:62.5,target:"3"},{kg:72.5,target:"3"},{kg:80,target:"3+"}] },
+      { name:"Bench",     sets:[{kg:52.5,target:"3"},{kg:60,target:"3"},{kg:67.5,target:"3+"}] },
+      { name:"Deadlift",  sets:[{kg:60,target:"3"},{kg:70,target:"3"},{kg:80,target:"3+"}] },
+      { name:"OHP",       sets:[{kg:30,target:"3"},{kg:35,target:"3"},{kg:37.5,target:"3+"}] },
+    ],
+    pullups: { sets:5, targetTotal:30, note:"5×6 reps, reduce assist", band:"Medium → Light on sets 4-5" }
+  },
+  { w:7,  cycle:2, type:"5/3/1 Week",  deload:false,
+    lifts:[
+      { name:"Squat",     sets:[{kg:67.5,target:"5"},{kg:77.5,target:"3"},{kg:85,target:"1+"}] },
+      { name:"Bench",     sets:[{kg:55,target:"5"},{kg:65,target:"3"},{kg:70,target:"1+"}] },
+      { name:"Deadlift",  sets:[{kg:65,target:"5"},{kg:75,target:"3"},{kg:82.5,target:"1+"}] },
+      { name:"OHP",       sets:[{kg:32.5,target:"5"},{kg:35,target:"3"},{kg:40,target:"1+"}] },
+    ],
+    pullups: { sets:5, targetTotal:35, note:"5×7 reps, reduce assist", band:"Light band — try last set bodyweight" }
+  },
+  { w:8,  cycle:2, type:"Deload",      deload:true,
+    lifts:[
+      { name:"Squat",     sets:[{kg:35,target:"5"},{kg:45,target:"5"},{kg:55,target:"5"}] },
+      { name:"Bench",     sets:[{kg:30,target:"5"},{kg:37.5,target:"5"},{kg:45,target:"5"}] },
+      { name:"Deadlift",  sets:[{kg:35,target:"5"},{kg:45,target:"5"},{kg:52.5,target:"5"}] },
+      { name:"OHP",       sets:[{kg:17.5,target:"5"},{kg:20,target:"5"},{kg:25,target:"5"}] },
+    ],
+    pullups: { sets:3, targetTotal:15, note:"3×5 easy", band:"Medium band, easy effort" }
+  },
+  // C3 – TM: Sq=105 B=85 DL=105 OHP=47.5
+  { w:9,  cycle:3, type:"5s Week",     deload:false,
+    lifts:[
+      { name:"Squat",     sets:[{kg:67.5,target:"5"},{kg:80,target:"5"},{kg:90,target:"5+"}] },
+      { name:"Bench",     sets:[{kg:55,target:"5"},{kg:65,target:"5"},{kg:72.5,target:"5+"}] },
+      { name:"Deadlift",  sets:[{kg:67.5,target:"5"},{kg:80,target:"5"},{kg:90,target:"5+"}] },
+      { name:"OHP",       sets:[{kg:30,target:"5"},{kg:35,target:"5"},{kg:40,target:"5+"}] },
+    ],
+    pullups: { sets:5, targetTotal:35, note:"5×7 reps", band:"Light band — last 2 sets bodyweight" }
+  },
+  { w:10, cycle:3, type:"3s Week",     deload:false,
+    lifts:[
+      { name:"Squat",     sets:[{kg:72.5,target:"3"},{kg:85,target:"3"},{kg:95,target:"3+"}] },
+      { name:"Bench",     sets:[{kg:60,target:"3"},{kg:67.5,target:"3"},{kg:77.5,target:"3+"}] },
+      { name:"Deadlift",  sets:[{kg:72.5,target:"3"},{kg:85,target:"3"},{kg:95,target:"3+"}] },
+      { name:"OHP",       sets:[{kg:32.5,target:"3"},{kg:37.5,target:"3"},{kg:42.5,target:"3+"}] },
+    ],
+    pullups: { sets:5, targetTotal:40, note:"5×8 reps", band:"Bodyweight — all sets strict" }
+  },
+  { w:11, cycle:3, type:"5/3/1 PEAK",  deload:false,
+    lifts:[
+      { name:"Squat",     sets:[{kg:80,target:"5"},{kg:90,target:"3"},{kg:100,target:"1+"}] },
+      { name:"Bench",     sets:[{kg:65,target:"5"},{kg:72.5,target:"3"},{kg:80,target:"1+"}] },
+      { name:"Deadlift",  sets:[{kg:80,target:"5"},{kg:90,target:"3"},{kg:100,target:"1+"}] },
+      { name:"OHP",       sets:[{kg:35,target:"5"},{kg:40,target:"3"},{kg:45,target:"1+"}] },
+    ],
+    pullups: { sets:5, targetTotal:50, note:"5×10 reps strict", band:"No band — all sets strict" }
+  },
+  { w:12, cycle:3, type:"Deload",      deload:true,
+    lifts:[
+      { name:"Squat",     sets:[{kg:42.5,target:"5"},{kg:52.5,target:"5"},{kg:62.5,target:"5"}] },
+      { name:"Bench",     sets:[{kg:35,target:"5"},{kg:42.5,target:"5"},{kg:50,target:"5"}] },
+      { name:"Deadlift",  sets:[{kg:42.5,target:"5"},{kg:52.5,target:"5"},{kg:62.5,target:"5"}] },
+      { name:"OHP",       sets:[{kg:20,target:"5"},{kg:25,target:"5"},{kg:27.5,target:"5"}] },
+    ],
+    pullups: { sets:3, targetTotal:24, note:"3×8 easy", band:"No band, comfortable pace" }
+  },
+];
+
+// ══════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════
+let state = {
+  currentWeek: null,
+  currentExIdx: 0,       // 0-4 (0-3 lifts, 4 = pull-ups)
+  reps: {},              // { "wk-exIdx-setIdx": repsLogged }
+  weekDone: {},          // { weekNum: true }
+};
+
+// Load persisted state from localStorage
+function loadState() {
+  try {
+    const saved = localStorage.getItem('gymlog_state');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state.reps    = parsed.reps    || {};
+      state.weekDone = parsed.weekDone || {};
+    }
+  } catch(e) {}
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('gymlog_state', JSON.stringify({
+      reps: state.reps,
+      weekDone: state.weekDone,
+    }));
+  } catch(e) {}
+}
+
+function repKey(week, exIdx, setIdx) {
+  return `${week}-${exIdx}-${setIdx}`;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// HOME SCREEN
+// ══════════════════════════════════════════════════════════════════
+function renderHome() {
+  const list = document.getElementById('weekList');
+  list.innerHTML = '';
+
+  let lastCycle = null;
+  WEEKS.forEach(wk => {
+    if (wk.cycle !== lastCycle) {
+      lastCycle = wk.cycle;
+      const label = document.createElement('div');
+      label.className = 'cycle-label';
+      label.textContent = `Cycle ${wk.cycle}`;
+      list.appendChild(label);
+    }
+
+    const isDone    = state.weekDone[wk.w];
+    const isCurrent = !isDone && !WEEKS.slice(0, wk.w - 1).every(w => state.weekDone[w.w]);
+
+    const btn = document.createElement('button');
+    btn.className = 'week-btn' +
+      (wk.deload ? ' deload' : '') +
+      (isDone    ? ' complete' : '') +
+      (isCurrent && !isDone ? ' current' : '');
+
+    btn.innerHTML = `
+      <div class="week-num">${wk.w}</div>
+      <div class="week-info">
+        <div class="week-type">${wk.type}</div>
+        <div class="week-meta">Cycle ${wk.cycle} · 5 exercises</div>
+      </div>
+      <div class="week-tick">✓</div>
+    `;
+    btn.addEventListener('click', () => openSession(wk.w));
+    list.appendChild(btn);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SESSION SCREEN
+// ══════════════════════════════════════════════════════════════════
+function openSession(weekNum) {
+  state.currentWeek = weekNum;
+  state.currentExIdx = 0;
+
+  const wk = WEEKS[weekNum - 1];
+  document.getElementById('sessionTitle').innerHTML =
+    `Week <span>${weekNum}</span>`;
+  document.getElementById('sessionSub').textContent =
+    `${wk.type} · Cycle ${wk.cycle}`;
+
+  renderExNav();
+  renderExercise();
+
+  showScreen('session');
+}
+
+function renderExNav() {
+  const wk  = WEEKS[state.currentWeek - 1];
+  const nav  = document.getElementById('exNav');
+  nav.innerHTML = '';
+
+  const exercises = [...wk.lifts.map(l => l.name), 'Pull-ups'];
+  exercises.forEach((name, idx) => {
+    const pill = document.createElement('button');
+    pill.className = 'ex-pill' +
+      (idx === state.currentExIdx ? ' active' : '') +
+      (isExDone(state.currentWeek, idx) && idx !== state.currentExIdx ? ' done-pill' : '');
+    pill.textContent = name;
+    pill.addEventListener('click', () => {
+      state.currentExIdx = idx;
+      renderExNav();
+      renderExercise();
+    });
+    nav.appendChild(pill);
+  });
+}
+
+function isExDone(weekNum, exIdx) {
+  const wk = WEEKS[weekNum - 1];
+  if (exIdx < 4) {
+    const lift = wk.lifts[exIdx];
+    return lift.sets.every((_, si) =>
+      state.reps[repKey(weekNum, exIdx, si)] !== undefined
+    );
+  } else {
+    // pull-ups: all sets logged
+    const pu = wk.pullups;
+    return Array.from({length: pu.sets}, (_, si) =>
+      state.reps[repKey(weekNum, 4, si)]
+    ).every(v => v !== undefined);
+  }
+}
+
+function renderExercise() {
+  const wk   = WEEKS[state.currentWeek - 1];
+  const idx   = state.currentExIdx;
+  const content = document.getElementById('exContent');
+  const footer  = document.getElementById('sessionFooter');
+
+  const totalEx = wk.lifts.length + 1; // +1 for pull-ups
+
+  content.innerHTML = '';
+
+  if (idx < 4) {
+    // ── BARBELL LIFT ──
+    const lift = wk.lifts[idx];
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'ex-name';
+    nameEl.textContent = lift.name;
+    content.appendChild(nameEl);
+
+    const setsContainer = document.createElement('div');
+    setsContainer.className = 'sets-container';
+
+    lift.sets.forEach((set, si) => {
+      const existing = state.reps[repKey(state.currentWeek, idx, si)];
+      const card = document.createElement('div');
+      card.className = 'set-card' + (existing !== undefined ? ' set-done' : '');
+
+      card.innerHTML = `
+        <div class="set-left">
+          <div class="set-label">Set ${si + 1}</div>
+          <div class="set-weight">${formatKg(set.kg)}<small style="font-size:16px;color:var(--muted)"> kg</small></div>
+          <div class="set-target">Target: ${set.target} reps</div>
+        </div>
+        <div class="rep-counter">
+          <button class="rep-btn" onclick="changeRep(${idx},${si},-1)">−</button>
+          <div class="rep-display ${existing !== undefined ? 'has-reps' : ''}" id="repDisp-${idx}-${si}">
+            ${existing !== undefined ? existing : '—'}
+          </div>
+          <button class="rep-btn" onclick="changeRep(${idx},${si},1)">+</button>
+        </div>
+      `;
+      setsContainer.appendChild(card);
+    });
+
+    content.appendChild(setsContainer);
+
+  } else {
+    // ── PULL-UPS ──
+    const pu = wk.pullups;
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'ex-name';
+    nameEl.textContent = 'Pull-ups';
+    content.appendChild(nameEl);
+
+    const card = document.createElement('div');
+    card.className = 'pullup-card';
+
+    let setsHtml = '';
+    for (let si = 0; si < pu.sets; si++) {
+      const existing = state.reps[repKey(state.currentWeek, 4, si)];
+      setsHtml += `
+        <div class="pullup-set">
+          <div class="pullup-set-label">Set ${si+1}</div>
+          <div class="rep-counter">
+            <button class="rep-btn" onclick="changeRep(4,${si},-1)">−</button>
+            <div class="rep-display ${existing !== undefined ? 'has-reps' : ''}" id="repDisp-4-${si}">
+              ${existing !== undefined ? existing : '—'}
+            </div>
+            <button class="rep-btn" onclick="changeRep(4,${si},1)">+</button>
+          </div>
+        </div>
+      `;
+    }
+
+    card.innerHTML = `
+      <div class="pullup-header">
+        <div>
+          <div class="pullup-target-label">Target total</div>
+          <div class="pullup-target-val">${pu.targetTotal} reps</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">${pu.note}</div>
+        </div>
+        <div class="pullup-band">${pu.band}</div>
+      </div>
+      <div class="pullup-sets" id="pullupSets">${setsHtml}</div>
+      <div class="pullup-total">
+        <div class="pullup-total-label">Total logged</div>
+        <div class="pullup-total-val" id="pullupTotalVal" style="color:var(--accent2)">${getPullupTotal()}</div>
+      </div>
+    `;
+    content.appendChild(card);
+  }
+
+  // ── FOOTER ──
+  footer.innerHTML = '';
+
+  const isFirst = idx === 0;
+  const isLast  = idx === totalEx - 1;
+
+  if (!isFirst) {
+    const prev = document.createElement('button');
+    prev.className = 'nav-btn';
+    prev.textContent = '← Back';
+    prev.onclick = () => {
+      state.currentExIdx--;
+      renderExNav();
+      renderExercise();
+    };
+    footer.appendChild(prev);
+  }
+
+  if (!isLast) {
+    const next = document.createElement('button');
+    next.className = 'nav-btn primary';
+    next.textContent = 'Next →';
+    next.onclick = () => {
+      state.currentExIdx++;
+      renderExNav();
+      renderExercise();
+    };
+    footer.appendChild(next);
+  } else {
+    const finish = document.createElement('button');
+    finish.className = 'nav-btn finish-btn';
+    finish.textContent = '✓ Finish Session';
+    finish.onclick = finishSession;
+    footer.appendChild(finish);
+  }
+}
+
+function getPullupTotal() {
+  const wk = WEEKS[state.currentWeek - 1];
+  let total = 0;
+  for (let si = 0; si < wk.pullups.sets; si++) {
+    const v = state.reps[repKey(state.currentWeek, 4, si)];
+    if (v !== undefined) total += v;
+  }
+  return total;
+}
+
+function changeRep(exIdx, setIdx, delta) {
+  const key = repKey(state.currentWeek, exIdx, setIdx);
+  const current = state.reps[key] !== undefined ? state.reps[key] : 0;
+  const newVal  = Math.max(0, current + delta);
+
+  if (newVal === 0 && current === 0) return; // nothing to do
+
+  state.reps[key] = newVal;
+  saveState();
+
+  // Update display
+  const disp = document.getElementById(`repDisp-${exIdx}-${setIdx}`);
+  if (disp) {
+    disp.textContent = newVal;
+    disp.classList.add('has-reps');
+  }
+
+  // Update pull-up total if needed
+  if (exIdx === 4) {
+    const totalEl = document.getElementById('pullupTotalVal');
+    if (totalEl) totalEl.textContent = getPullupTotal();
+  }
+
+  // Update set card border
+  const wk = WEEKS[state.currentWeek - 1];
+  if (exIdx < 4) {
+    const lift = wk.lifts[exIdx];
+    const cards = document.querySelectorAll('.set-card');
+    lift.sets.forEach((_, si) => {
+      if (cards[si]) {
+        const k = repKey(state.currentWeek, exIdx, si);
+        if (state.reps[k] !== undefined) {
+          cards[si].classList.add('set-done');
+        }
+      }
+    });
+  }
+
+  renderExNav(); // update pill states
+}
+
+function finishSession() {
+  state.weekDone[state.currentWeek] = true;
+  saveState();
+  renderDone();
+  showScreen('done');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DONE SCREEN
+// ══════════════════════════════════════════════════════════════════
+function renderDone() {
+  const wk = WEEKS[state.currentWeek - 1];
+  document.getElementById('doneSub').textContent =
+    `Week ${wk.w} · ${wk.type} complete`;
+
+  let summaryHtml = '<h3>What you logged</h3>';
+
+  wk.lifts.forEach((lift, exIdx) => {
+    const repsList = lift.sets.map((_, si) => {
+      const v = state.reps[repKey(state.currentWeek, exIdx, si)];
+      return v !== undefined ? v : '–';
+    }).join(' / ');
+
+    summaryHtml += `
+      <div class="summary-row">
+        <span class="lift-name">${lift.name}</span>
+        <span class="lift-sets">${repsList}</span>
+      </div>`;
+  });
+
+  // Pull-ups
+  const puSets = Array.from({length: wk.pullups.sets}, (_, si) => {
+    const v = state.reps[repKey(state.currentWeek, 4, si)];
+    return v !== undefined ? v : '–';
+  });
+  summaryHtml += `
+    <div class="summary-row">
+      <span class="lift-name">Pull-ups</span>
+      <span class="lift-sets">${puSets.join(' / ')} = ${getPullupTotal()}</span>
+    </div>`;
+
+  document.getElementById('doneSummary').innerHTML = summaryHtml;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════════════
+function formatKg(kg) {
+  return kg % 1 === 0 ? kg : kg.toFixed(1);
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  // scroll to top
+  document.getElementById(id).scrollTop = 0;
+}
+
+function goHome() {
+  renderHome();
+  showScreen('home');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════
+loadState();
+renderHome();
+</script>
+</body>
+</html>
