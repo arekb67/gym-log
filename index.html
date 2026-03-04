@@ -126,6 +126,15 @@
   canvas { width: 100% !important; display: block; }
   .no-data { font-size: 13px; color: var(--muted); padding: 12px 0; }
 
+  /* pace chart */
+  .pace-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .pace-header h3 { margin-bottom: 0; }
+  .pace-status { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 8px; border-radius: 6px; }
+  .pace-status.ok      { color: var(--done);   background: rgba(58,255,138,0.12); }
+  .pace-status.plateau { color: var(--warn);   background: rgba(255,184,48,0.12); }
+  .pace-legend { display: flex; gap: 14px; align-items: center; margin-top: 8px; font-size: 11px; color: var(--muted); }
+  .pace-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+
   /* progress track bars */
   .track-grid { display: flex; flex-direction: column; gap: 12px; }
   .track-row  { display: flex; flex-direction: column; gap: 4px; }
@@ -348,11 +357,18 @@ async function loadFromGitHub(){
       const di = DAYS.indexOf(session.day);
       if(di < 0) return;
       S.dayDone[dk(session.week, di)] = true;
+      // Restore barbell lift reps
       session.lifts.forEach((lift, ei) => {
         lift.reps.forEach((r, si) => {
           if(r !== null) S.reps[rk(session.week, di, ei, si)] = r;
         });
       });
+      // Restore pull-up reps (stored at exIdx 4)
+      if(session.pullups?.reps){
+        session.pullups.reps.forEach((r, si) => {
+          if(r !== null) S.reps[rk(session.week, di, 4, si)] = r;
+        });
+      }
     });
     saveLocal();
     setSyncStatus('ok','✓ Synced with GitHub');
@@ -634,18 +650,54 @@ function openProgress(){
     return DAYS.indexOf(a.day)-DAYS.indexOf(b.day);
   });
 
-  // ── 1. On-track progress bars ──────────────────────────────────
+  // ── 1. Snapshot progress bars ─────────────────────────────────
   const trackCard = document.createElement('div'); trackCard.className='chart-card';
   trackCard.innerHTML = '<h3>12-week targets — where are you now?</h3><div class="track-grid" id="trackGrid"></div>';
   body.appendChild(trackCard);
 
-  // ── 2. Top set weight progression ──────────────────────────────
-  const progCard = document.createElement('div'); progCard.className='chart-card';
-  progCard.innerHTML = '<h3>Top set weight progression</h3>'
-    + (sorted.length ? '<canvas id="progChart" height="200"></canvas>' : '<div class="no-data">No sessions logged yet.</div>');
-  body.appendChild(progCard);
+  // ── 2. Per-exercise pace charts ───────────────────────────────
+  // Build the full planned programme curve once, shared by all charts
+  // plannedCurve[exerciseName] = array of { label, value } for all 36 sessions
+  const plannedCurve = buildPlannedCurve();
 
-  // ── 3. Rep performance vs target (last session per lift) ────────
+  const exercises = [
+    { name:'Squat',    color:'#e8ff3a' },
+    { name:'Bench',    color:'#3aff8a' },
+    { name:'Deadlift', color:'#ff6b35' },
+    { name:'OHP',      color:'#a78bfa' },
+    { name:'Pull-ups', color:'#38bdf8' },
+  ];
+
+  exercises.forEach((ex, i) => {
+    const card = document.createElement('div'); card.className='chart-card';
+    const canvasId = `paceChart_${i}`;
+
+    // Plateau detection: last 3+ logged values with no improvement
+    const actualPoints = getActualPoints(sorted, ex.name);
+    const plateauMsg   = detectPlateau(actualPoints);
+    const statusHtml   = plateauMsg
+      ? `<div class="pace-status plateau">${plateauMsg}</div>`
+      : actualPoints.length >= 2
+        ? `<div class="pace-status ok">↑ Progressing</div>`
+        : '';
+
+    card.innerHTML = `
+      <div class="pace-header">
+        <h3>${ex.name}</h3>
+        ${statusHtml}
+      </div>
+      ${sorted.length
+        ? `<canvas id="${canvasId}" height="160"></canvas>
+           <div class="pace-legend">
+             <span class="pace-dot" style="background:${ex.color}"></span><span>Actual</span>
+             <span class="pace-dot" style="background:#444"></span><span>Programme plan</span>
+           </div>`
+        : '<div class="no-data">No sessions logged yet.</div>'
+      }`;
+    body.appendChild(card);
+  });
+
+  // ── 3. Rep performance vs target ─────────────────────────────
   const repCard = document.createElement('div'); repCard.className='chart-card';
   repCard.innerHTML = '<h3>Top set reps — last session per lift</h3>'
     + (sorted.length ? '<canvas id="repChart" height="160"></canvas>' : '<div class="no-data">No sessions logged yet.</div>');
@@ -654,7 +706,9 @@ function openProgress(){
   requestAnimationFrame(()=>{
     drawTrackBars(sorted);
     if(sorted.length){
-      drawProgressionChart(sorted);
+      exercises.forEach((ex, i) => {
+        drawPaceChart(`paceChart_${i}`, ex.name, ex.color, sorted, plannedCurve[ex.name]);
+      });
       drawRepChart(sorted);
     }
   });
@@ -662,33 +716,150 @@ function openProgress(){
   showScreen('progress');
 }
 
+// ── Build the full planned programme curve for all exercises ──────
+// Returns { 'Squat': [{label, value}, ...], 'Pull-ups': [...], ... }
+// Each entry = one of the 36 sessions (12 weeks × 3 days)
+function buildPlannedCurve(){
+  const curve = { Squat:[], Bench:[], Deadlift:[], OHP:[], 'Pull-ups':[] };
+  WEEKS.forEach(wk => {
+    DAYS.forEach(day => {
+      const label = `W${wk.w} ${day}`;
+      wk.lifts.forEach(lift => {
+        curve[lift.name].push({ label, value: lift.sets[lift.sets.length-1].kg });
+      });
+      curve['Pull-ups'].push({ label, value: wk.pu.total });
+    });
+  });
+  return curve;
+}
+
+// ── Extract actual logged data points for one exercise ────────────
+function getActualPoints(sorted, name){
+  return sorted.flatMap(s => {
+    const label = `W${s.week} ${s.day}`;
+    if(name === 'Pull-ups'){
+      return s.pullups?.total > 0 ? [{ label, value: s.pullups.total }] : [];
+    }
+    const lift = s.lifts.find(l=>l.name===name);
+    if(!lift) return [];
+    const topKg = lift.sets[lift.sets.length-1];
+    return topKg != null ? [{ label, value: topKg }] : [];
+  });
+}
+
+// ── Plateau detection: flag if last N sessions show no improvement ─
+// Returns a warning string or null
+function detectPlateau(points){
+  const WINDOW = 3; // sessions with no improvement = plateau
+  if(points.length < WINDOW) return null;
+  const recent = points.slice(-WINDOW).map(p=>p.value);
+  const max = Math.max(...recent);
+  const min = Math.min(...recent);
+  if(max === min) return `⚠ Plateau — no improvement in last ${WINDOW} sessions`;
+  return null;
+}
+
+// ── Per-exercise pace chart ────────────────────────────────────────
+// Plots actual (coloured line) vs planned programme (grey dashed)
+// x-axis = all 36 sessions; only logged sessions show actual dots
+function drawPaceChart(canvasId, name, color, sorted, planned){
+  const canvas = document.getElementById(canvasId); if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  const actual = getActualPoints(sorted, name);
+
+  // Build a lookup so we can place actual points on the correct x position
+  const actualMap = {};
+  actual.forEach(p => { actualMap[p.label] = p.value; });
+
+  const xLabels   = planned.map(p=>p.label);
+  const planVals  = planned.map(p=>p.value);
+  // actual array aligned to planned x-axis (null where not logged yet)
+  const actualVals = planned.map(p=>actualMap[p.label]??null);
+
+  const W = canvas.offsetWidth; const H = canvas.offsetHeight||160;
+  canvas.width=W*2; canvas.height=H*2; ctx.scale(2,2);
+  ctx.clearRect(0,0,W,H);
+
+  const pad={l:30,r:10,t:10,b:28};
+  const allVals = [...planVals, ...actual.map(p=>p.value)];
+  const minVal  = Math.min(...allVals)*0.88;
+  const maxVal  = Math.max(...allVals)*1.08;
+  const n       = xLabels.length;
+  const xStep   = (W-pad.l-pad.r)/(n-1);
+
+  function yx(v){ return pad.t+(1-(v-minVal)/(maxVal-minVal))*(H-pad.t-pad.b); }
+  function xx(i){ return pad.l+i*xStep; }
+
+  // Gridlines + y labels
+  ctx.strokeStyle='#222'; ctx.lineWidth=1;
+  [0,0.25,0.5,0.75,1].forEach(f=>{
+    const v = minVal+(maxVal-minVal)*f;
+    const y = yx(v);
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
+    ctx.fillStyle='#555'; ctx.font='9px Barlow'; ctx.textAlign='right';
+    ctx.fillText(name==='Pull-ups'?Math.round(v):Math.round(v)+'kg', pad.l-3, y+3);
+  });
+
+  // Week boundary markers (every 3 sessions = 1 week)
+  ctx.strokeStyle='#1a1a1a'; ctx.lineWidth=1;
+  for(let i=3; i<n; i+=3){
+    const x=xx(i);
+    ctx.beginPath(); ctx.moveTo(x,pad.t); ctx.lineTo(x,H-pad.b); ctx.stroke();
+  }
+
+  // Planned programme line (grey dashed)
+  ctx.strokeStyle='#444'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+  ctx.beginPath();
+  planVals.forEach((v,i)=>{ i===0?ctx.moveTo(xx(i),yx(v)):ctx.lineTo(xx(i),yx(v)); });
+  ctx.stroke(); ctx.setLineDash([]);
+
+  // Actual line (solid, coloured) — only draw between logged points
+  ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.lineJoin='round';
+  ctx.beginPath(); let first=true;
+  actualVals.forEach((v,i)=>{
+    if(v===null){ first=true; return; }
+    first?(ctx.moveTo(xx(i),yx(v)),first=false):ctx.lineTo(xx(i),yx(v));
+  });
+  ctx.stroke();
+
+  // Actual dots
+  actualVals.forEach((v,i)=>{
+    if(v===null) return;
+    ctx.fillStyle=color;
+    ctx.beginPath(); ctx.arc(xx(i),yx(v),3,0,Math.PI*2); ctx.fill();
+  });
+
+  // X-axis: week labels only (W1, W2 … W12) — one per 3 sessions
+  ctx.fillStyle='#555'; ctx.font='9px Barlow'; ctx.textAlign='center';
+  for(let i=0; i<n; i+=3){
+    ctx.fillText(`W${Math.floor(i/3)+1}`, xx(i), H-4);
+  }
+}
+
 // ── Track bars: best top set logged vs 12-week target ─────────────
 function drawTrackBars(sorted){
   const grid = document.getElementById('trackGrid'); if(!grid) return;
   grid.innerHTML = '';
 
+  // ── Barbell lifts ──
   const liftNames = ['Squat','Bench','Deadlift','OHP'];
   liftNames.forEach(name=>{
     const target = TARGETS[name];
-    // Find best top set weight logged for this lift across all sessions
     let bestKg = 0;
     sorted.forEach(s=>{
       const lift = s.lifts.find(l=>l.name===name); if(!lift) return;
       const topKg = lift.sets[lift.sets.length-1];
       if(topKg > bestKg) bestKg = topKg;
     });
-
-    // What should the current top set be per programme? Use last logged week
     const lastSession = [...sorted].reverse().find(s=>s.lifts.find(l=>l.name===name));
     const currentWeekNum = lastSession ? lastSession.week : 1;
     const wk = WEEKS[currentWeekNum-1];
     const plannedKg = wk?.lifts.find(l=>l.name===name)?.sets[2]?.kg ?? bestKg;
-
     const pct = bestKg > 0 ? Math.min(100, Math.round((bestKg/target)*100)) : 0;
     const diff = bestKg - plannedKg;
     const color = bestKg===0 ? '#444' : diff>=0 ? '#3aff8a' : diff>=-5 ? '#ffb830' : '#ff6b35';
     const status = bestKg===0 ? 'Not started' : diff>=0 ? '✓ On track' : diff>=-5 ? '~ Close' : '↓ Behind plan';
-
     grid.innerHTML += `
       <div class="track-row">
         <div class="track-header">
@@ -701,20 +872,34 @@ function drawTrackBars(sorted){
         <div class="track-label">${pct}% of target · ${status}</div>
       </div>`;
   });
-}
 
-// ── Line chart: top set weight per session ─────────────────────────
-function drawProgressionChart(sorted){
-  const canvas = document.getElementById('progChart'); if(!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const liftNames = ['Squat','Bench','Deadlift','OHP'];
-  const colors = ['#e8ff3a','#3aff8a','#ff6b35','#a78bfa'];
-  const xLabels = sorted.map(s=>`W${s.week} ${s.day}`);
-  const datasets = liftNames.map((name,li)=>({
-    label: name, color: colors[li],
-    data: sorted.map(s=>{ const l=s.lifts.find(x=>x.name===name); return l?l.sets[l.sets.length-1]:null; }),
-  }));
-  drawLineChart(ctx, canvas, xLabels, datasets);
+  // ── Pull-ups: best total reps in a single session vs Week 11 target (50) ──
+  const puTarget = 50;
+  let bestPuTotal = 0;
+  let bestPuWeek = 1;
+  sorted.forEach(s=>{
+    if(s.pullups?.total > bestPuTotal){
+      bestPuTotal = s.pullups.total;
+      bestPuWeek  = s.week;
+    }
+  });
+  const wkPu = WEEKS[bestPuWeek-1];
+  const plannedPuTotal = wkPu?.pu?.total ?? bestPuTotal;
+  const puPct  = bestPuTotal > 0 ? Math.min(100, Math.round((bestPuTotal/puTarget)*100)) : 0;
+  const puDiff = bestPuTotal - plannedPuTotal;
+  const puColor  = bestPuTotal===0 ? '#444' : puDiff>=0 ? '#3aff8a' : puDiff>=-5 ? '#ffb830' : '#ff6b35';
+  const puStatus = bestPuTotal===0 ? 'Not started' : puDiff>=0 ? '✓ On track' : puDiff>=-3 ? '~ Close' : '↓ Behind plan';
+  grid.innerHTML += `
+    <div class="track-row">
+      <div class="track-header">
+        <span class="track-lift">Pull-ups</span>
+        <span class="track-nums">${bestPuTotal>0?bestPuTotal+' best total':'–'} → ${puTarget} target</span>
+      </div>
+      <div class="track-bar-bg">
+        <div class="track-bar-fill" style="width:${puPct}%;background:${puColor}"></div>
+      </div>
+      <div class="track-label">${puPct}% of target · ${puStatus}</div>
+    </div>`;
 }
 
 // ── Bar chart: top set actual reps vs target, last session per lift ─
@@ -722,20 +907,29 @@ function drawRepChart(sorted){
   const canvas = document.getElementById('repChart'); if(!canvas) return;
   const ctx = canvas.getContext('2d');
   const liftNames = ['Squat','Bench','Deadlift','OHP'];
-
-  // For each lift find the most recent session that has it
   const labels=[], actual=[], targets=[];
+
+  // Barbell lifts
   liftNames.forEach(name=>{
     const last = [...sorted].reverse().find(s=>s.lifts.find(l=>l.name===name));
     if(!last) return;
     const lift = last.lifts.find(l=>l.name===name);
     const topRep = lift.reps[lift.reps.length-1];
     if(topRep===null) return;
-    // get planned target for that week
     const wk = WEEKS[last.week-1];
     const planned = parseInt(wk?.lifts.find(l=>l.name===name)?.sets[2]?.t ?? '5');
     labels.push(name); actual.push(topRep); targets.push(planned);
   });
+
+  // Pull-ups: use total reps vs planned total for that week
+  const lastPu = [...sorted].reverse().find(s=>s.pullups?.total > 0);
+  if(lastPu){
+    const wk = WEEKS[lastPu.week-1];
+    const plannedTotal = wk?.pu?.total ?? 0;
+    labels.push('Pull-ups');
+    actual.push(lastPu.pullups.total);
+    targets.push(plannedTotal);
+  }
 
   if(!labels.length){
     ctx.fillStyle='#666'; ctx.font='13px Barlow';
@@ -775,62 +969,6 @@ function drawBarChart(ctx, canvas, labels, datasets){
   });
   ctx.fillStyle='#aaa'; ctx.font='10px Barlow'; ctx.textAlign='center';
   labels.forEach((lbl,i)=>{ ctx.fillText(lbl,pad.l+i*groupW+groupW/2,H-6); });
-}
-
-function drawLineChart(ctx, canvas, labels, datasets){
-  const W=canvas.offsetWidth; const H=canvas.offsetHeight||200;
-  canvas.width=W*2; canvas.height=H*2; ctx.scale(2,2);
-  ctx.clearRect(0,0,W,H);
-  const pad={l:28,r:12,t:12,b:36};
-  const allVals=datasets.flatMap(d=>d.data.filter(v=>v!==null));
-  if(!allVals.length) return;
-  const minVal=Math.min(...allVals)*0.9;
-  const maxVal=Math.max(...allVals)*1.1;
-  const xStep=(W-pad.l-pad.r)/(Math.max(labels.length-1,1));
-  ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=1;
-  [0,0.25,0.5,0.75,1].forEach(f=>{
-    const v=minVal+(maxVal-minVal)*f;
-    const y=pad.t+(1-f)*(H-pad.t-pad.b);
-    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
-    ctx.fillStyle='#666'; ctx.font='9px Barlow'; ctx.textAlign='right';
-    ctx.fillText(Math.round(v),pad.l-3,y+3);
-  });
-  // dashed target lines
-  Object.entries(TARGETS).forEach(([name,tgt])=>{
-    const ds=datasets.find(d=>d.label===name); if(!ds) return;
-    const y=pad.t+(1-(tgt-minVal)/(maxVal-minVal))*(H-pad.t-pad.b);
-    ctx.strokeStyle=ds.color+'55'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
-    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
-    ctx.setLineDash([]);
-  });
-  // lines + dots
-  datasets.forEach(ds=>{
-    ctx.strokeStyle=ds.color; ctx.lineWidth=2; ctx.lineJoin='round';
-    ctx.beginPath(); let first=true;
-    ds.data.forEach((v,i)=>{
-      if(v===null) return;
-      const x=pad.l+i*xStep;
-      const y=pad.t+(1-(v-minVal)/(maxVal-minVal))*(H-pad.t-pad.b);
-      first?(ctx.moveTo(x,y),first=false):ctx.lineTo(x,y);
-    });
-    ctx.stroke();
-    ds.data.forEach((v,i)=>{
-      if(v===null) return;
-      const x=pad.l+i*xStep;
-      const y=pad.t+(1-(v-minVal)/(maxVal-minVal))*(H-pad.t-pad.b);
-      ctx.fillStyle=ds.color; ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill();
-    });
-  });
-  // legend
-  ctx.textAlign='left'; ctx.font='10px Barlow Condensed';
-  datasets.forEach((ds,i)=>{
-    ctx.fillStyle=ds.color; ctx.fillRect(pad.l+i*52,H-10,8,8);
-    ctx.fillStyle='#aaa'; ctx.fillText(ds.label,pad.l+i*52+10,H-3);
-  });
-  // x-axis: first + last label only
-  ctx.fillStyle='#666'; ctx.font='9px Barlow'; ctx.textAlign='center';
-  if(labels.length>0) ctx.fillText(labels[0],pad.l,H-18);
-  if(labels.length>1) ctx.fillText(labels[labels.length-1],W-pad.r,H-18);
 }
 
 // ══════════════════════════════════════════════════════════════════
