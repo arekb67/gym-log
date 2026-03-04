@@ -6,8 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <!-- APP VERSION — bump this number on every deploy to bust Safari home screen cache -->
-<meta name="app-version" content="1.5">
-<title>Arek's Training Log v1.5</title>
+<meta name="app-version" content="1.6">
+<title>Arek's Training Log v1.6</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@300;400;500&display=swap');
 
@@ -157,7 +157,7 @@
     <h1>Arek's <span>Training</span> Log</h1>
     <p>12-week 5/3/1 · Tue / Thu / Sat</p>
     <div class="sync-status" id="syncStatus"></div>
-    <div style="font-size:10px;color:#888;margin-top:2px;">v1.5</div>
+    <div style="font-size:10px;color:#888;margin-top:2px;">v1.6</div>
     <button onclick="openProgress()" style="margin-top:10px;width:100%;padding:10px;border-radius:10px;background:var(--surface2);border:1px solid #555;color:#ddd;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer;">📈 Progress Reports</button>
   </div>
   <div class="week-list" id="weekList"></div>
@@ -758,10 +758,20 @@ function buildPlannedCurve(){
       wk.lifts.forEach(lift => {
         curve[lift.name].push({ label, value: lift.sets[lift.sets.length-1].kg });
       });
-      curve['Pull-ups'].push({ label, value: wk.pu.total });
+      // Parse planned pull-up total from note e.g. "5×7 reps" → 5×7 = 35
+      const puTotal = parsePuTotal(wk.pu);
+      curve['Pull-ups'].push({ label, value: puTotal });
     });
   });
   return curve;
+}
+
+// Parse planned pull-up total from pu object
+// note format: "5×5 reps", "3×5 reps — easy" etc.
+function parsePuTotal(pu){
+  const match = pu.note.match(/(\d+)×(\d+)/);
+  if(match) return parseInt(match[1]) * parseInt(match[2]);
+  return pu.sets * 5; // fallback
 }
 
 // ── Extract actual logged data points for one exercise ────────────
@@ -915,7 +925,7 @@ function drawTrackBars(sorted){
     }
   });
   const wkPu = WEEKS[bestPuWeek-1];
-  const plannedPuTotal = wkPu?.pu?.total ?? bestPuTotal;
+  const plannedPuTotal = wkPu ? parsePuTotal(wkPu.pu) : bestPuTotal;
   const puPct  = bestPuTotal > 0 ? Math.min(100, Math.round((bestPuTotal/puTarget)*100)) : 0;
   const puDiff = bestPuTotal - plannedPuTotal;
   const puColor  = bestPuTotal===0 ? '#444' : puDiff>=0 ? '#3aff8a' : puDiff>=-5 ? '#ffb830' : '#ff6b35';
@@ -956,7 +966,7 @@ function drawRepChart(sorted){
   const lastPu = [...sorted].reverse().find(s=>s.pullups?.total > 0);
   if(lastPu){
     const wk = WEEKS[lastPu.week-1];
-    const plannedTotal = wk?.pu?.total ?? 0;
+    const plannedTotal = parsePuTotal(wk.pu);
     labels.push('Pull-ups');
     actual.push(lastPu.pullups.total);
     targets.push(plannedTotal);
