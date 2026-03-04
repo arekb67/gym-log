@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Arek's Training Log</title>
+<!-- APP VERSION — bump this number on every deploy to bust Safari home screen cache -->
+<meta name="app-version" content="1.4">
+<title>Arek's Training Log v1.4</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@300;400;500&display=swap');
 
@@ -153,6 +155,7 @@
     <h1>Arek's <span>Training</span> Log</h1>
     <p>12-week 5/3/1 · Tue / Thu / Sat</p>
     <div class="sync-status" id="syncStatus"></div>
+    <div style="font-size:10px;color:#555;margin-top:2px;">v1.4</div>
     <button onclick="openProgress()" style="margin-top:10px;width:100%;padding:10px;border-radius:10px;background:var(--surface2);border:1px solid #555;color:#ddd;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer;">📈 Progress Reports</button>
   </div>
   <div class="week-list" id="weekList"></div>
@@ -371,9 +374,7 @@ async function loadFromGitHub(){
       }
     });
     saveLocal();
-    setSyncStatus('ok','✓ Synced with GitHub');
-  } catch(e){
-    setSyncStatus('err','⚠ Offline — using local data');
+    setSyncStatus('ok','✓ Data synced with GitHub');
     loadLocal();
   }
 }
@@ -389,7 +390,7 @@ async function saveToGitHub(){
     const result = await res.json();
     if(result.ok){
       setDoneSync('ok','✓ Saved to GitHub');
-      setSyncStatus('ok','✓ Synced with GitHub');
+      setSyncStatus('ok','✓ Data synced with GitHub');
     } else {
       setDoneSync('err','⚠ Save failed — data kept locally');
     }
@@ -792,17 +793,17 @@ function drawPaceChart(canvasId, name, color, sorted, planned){
   function xx(i){ return pad.l+i*xStep; }
 
   // Gridlines + y labels
-  ctx.strokeStyle='#222'; ctx.lineWidth=1;
+  ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=1;
   [0,0.25,0.5,0.75,1].forEach(f=>{
     const v = minVal+(maxVal-minVal)*f;
     const y = yx(v);
     ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
-    ctx.fillStyle='#555'; ctx.font='9px Barlow'; ctx.textAlign='right';
+    ctx.fillStyle='#aaa'; ctx.font='9px Barlow'; ctx.textAlign='right';
     ctx.fillText(name==='Pull-ups'?Math.round(v):Math.round(v)+'kg', pad.l-3, y+3);
   });
 
   // Week boundary markers (every 3 sessions = 1 week)
-  ctx.strokeStyle='#1a1a1a'; ctx.lineWidth=1;
+  ctx.strokeStyle='#222'; ctx.lineWidth=1;
   for(let i=3; i<n; i+=3){
     const x=xx(i);
     ctx.beginPath(); ctx.moveTo(x,pad.t); ctx.lineTo(x,H-pad.b); ctx.stroke();
@@ -831,7 +832,7 @@ function drawPaceChart(canvasId, name, color, sorted, planned){
   });
 
   // X-axis: week labels only (W1, W2 … W12) — one per 3 sessions
-  ctx.fillStyle='#555'; ctx.font='9px Barlow'; ctx.textAlign='center';
+  ctx.fillStyle='#aaa'; ctx.font='9px Barlow'; ctx.textAlign='center';
   for(let i=0; i<n; i+=3){
     ctx.fillText(`W${Math.floor(i/3)+1}`, xx(i), H-4);
   }
