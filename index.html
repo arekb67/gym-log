@@ -375,6 +375,8 @@ async function loadFromGitHub(){
     });
     saveLocal();
     setSyncStatus('ok','✓ Data synced with GitHub');
+  } catch(e){
+    setSyncStatus('err','⚠ Offline — using local data');
     loadLocal();
   }
 }
