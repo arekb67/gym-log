@@ -6,8 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <!-- APP VERSION — bump this number on every deploy to bust Safari home screen cache -->
-<meta name="app-version" content="1.6">
-<title>Arek's Training Log v1.6</title>
+<meta name="app-version" content="2.0">
+<title>Training Log v2.0</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@300;400;500&display=swap');
 
@@ -148,16 +148,45 @@
   .track-bar-bg { height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
   .track-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
   .track-label { font-size: 11px; color: var(--muted); }
+
+  /* ── LOGIN ── */
+  #login { align-items: center; justify-content: center; padding: 40px 24px; gap: 20px; }
+  .login-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 36px; text-transform: uppercase; line-height: 1; text-align: center; }
+  .login-title span { color: var(--accent); }
+  .login-sub { font-size: 14px; color: var(--muted); text-align: center; }
+  .login-form { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 300px; }
+  .login-input { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; font-family: 'Barlow', sans-serif; font-size: 16px; color: var(--text); outline: none; width: 100%; }
+  .login-input:focus { border-color: var(--accent); }
+  .login-input::placeholder { color: #666; }
+  .login-btn { padding: 14px; border-radius: 10px; background: var(--accent); border: none; color: #000; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; }
+  .login-btn:active { opacity: 0.75; }
+  .login-error { font-size: 13px; color: var(--accent2); text-align: center; min-height: 18px; }
+  .user-info { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .user-info strong { color: var(--accent); }
+  .switch-user-btn { background: none; border: 1px solid #555; color: var(--muted); border-radius: 6px; padding: 3px 10px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; margin-left: 8px; }
+  .switch-user-btn:active { background: #2a2a2a; }
 </style>
 </head>
 <body>
 
-<div id="home" class="screen active">
+<div id="login" class="screen active">
+  <div class="login-title"><span>Training</span> Log</div>
+  <div class="login-sub">Enter your username and PIN</div>
+  <div class="login-form">
+    <input class="login-input" id="loginUser" type="text" placeholder="Username" autocapitalize="none" autocorrect="off">
+    <input class="login-input" id="loginPin" type="password" inputmode="numeric" maxlength="4" placeholder="PIN (4 digits)">
+    <button class="login-btn" onclick="doLogin()">Login</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<div id="home" class="screen">
   <div class="home-header">
-    <h1>Arek's <span>Training</span> Log</h1>
+    <h1><span>Training</span> Log</h1>
     <p>12-week 5/3/1 · Tue / Thu / Sat</p>
+    <div class="user-info" id="userInfo">Logged in as: <strong id="userDisplay"></strong><button class="switch-user-btn" onclick="switchUser()">Switch User</button></div>
     <div class="sync-status" id="syncStatus"></div>
-    <div style="font-size:10px;color:#888;margin-top:2px;">v1.6</div>
+    <div style="font-size:10px;color:#888;margin-top:2px;">v2.0</div>
     <button onclick="openProgress()" style="margin-top:10px;width:100%;padding:10px;border-radius:10px;background:var(--surface2);border:1px solid #555;color:#ddd;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer;">📈 Progress Reports</button>
   </div>
   <div class="week-list" id="weekList"></div>
@@ -203,6 +232,59 @@
 // CONFIG — update WORKER_URL if you rename your Cloudflare Worker
 // ══════════════════════════════════════════════════════════════════
 const WORKER_URL = 'https://gym-log-api.arek-baranowski.workers.dev';
+
+// ══════════════════════════════════════════════════════════════════
+// MULTIUSER AUTH
+// ══════════════════════════════════════════════════════════════════
+let CURRENT_USER = null;
+
+async function doLogin(){
+  const username = document.getElementById('loginUser').value.trim();
+  const pin      = document.getElementById('loginPin').value.trim();
+  const errEl    = document.getElementById('loginError');
+  errEl.textContent = '';
+
+  if(!username || !pin){ errEl.textContent = 'Please enter both username and PIN'; return; }
+
+  try{
+    const res = await fetch(WORKER_URL + '/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, pin }),
+    });
+    const data = await res.json();
+    if(!data.ok){
+      errEl.textContent = data.error || 'Invalid username or PIN';
+      return;
+    }
+    CURRENT_USER = username.toLowerCase();
+    document.getElementById('userDisplay').textContent = CURRENT_USER;
+    // Clear login form
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPin').value = '';
+    // Load user data and show home
+    loadLocal();
+    renderHome();
+    showScreen('home');
+    loadFromGitHub().then(()=>renderHome());
+  } catch(e){
+    errEl.textContent = 'Connection error — check your network';
+  }
+}
+
+function switchUser(){
+  CURRENT_USER = null;
+  S = { week:null, day:0, exIdx:0, reps:{}, dayDone:{} };
+  LOG = { sessions:[] };
+  showScreen('login');
+}
+
+// Allow Enter key to submit login
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Enter' && document.getElementById('login').classList.contains('active')){
+    doLogin();
+  }
+});
 
 // ══════════════════════════════════════════════════════════════════
 // 12-WEEK TARGETS (for progress tracking)
@@ -337,13 +419,14 @@ function rk(w,d,e,s){ return `${w}-${d}-${e}-${s}`; }
 function dk(w,d){ return `${w}-${d}`; }
 function fkg(v){ return v%1===0 ? v : v.toFixed(1); }
 
-// ── LOCAL CACHE (fallback when offline) ───────────────────────────
+// ── LOCAL CACHE (per-user, fallback when offline) ─────────────────
+function localKey(){ return 'gymlog_' + (CURRENT_USER || 'anon'); }
 function saveLocal(){
-  try{ localStorage.setItem('gymlog_local', JSON.stringify({reps:S.reps, dayDone:S.dayDone, log:LOG})); }catch(e){}
+  try{ localStorage.setItem(localKey(), JSON.stringify({reps:S.reps, dayDone:S.dayDone, log:LOG})); }catch(e){}
 }
 function loadLocal(){
   try{
-    const d = JSON.parse(localStorage.getItem('gymlog_local')||'{}');
+    const d = JSON.parse(localStorage.getItem(localKey())||'{}');
     S.reps    = d.reps    || {};
     S.dayDone = d.dayDone || {};
     LOG       = d.log     || { sessions:[] };
@@ -354,7 +437,7 @@ function loadLocal(){
 async function loadFromGitHub(){
   setSyncStatus('busy','⟳ Loading from GitHub…');
   try{
-    const res  = await fetch(WORKER_URL);
+    const res  = await fetch(WORKER_URL + '?user=' + encodeURIComponent(CURRENT_USER));
     const data = await res.json();
     LOG = data;
     // Reconstruct S.reps and S.dayDone from log
@@ -390,7 +473,7 @@ async function saveToGitHub(){
     const res = await fetch(WORKER_URL, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(LOG),
+      body: JSON.stringify({ user: CURRENT_USER, data: LOG }),
     });
     const result = await res.json();
     if(result.ok){
@@ -1013,12 +1096,9 @@ function drawBarChart(ctx, canvas, labels, datasets){
 }
 
 // ══════════════════════════════════════════════════════════════════
-// INIT — load from GitHub on startup, fall back to local if offline
+// INIT — show login screen, data loads after successful login
 // ══════════════════════════════════════════════════════════════════
-loadLocal(); // show something immediately
-renderHome();
-showScreen('home');
-loadFromGitHub().then(()=>renderHome()); // then update from GitHub
+showScreen('login');
 </script>
 </body>
 </html>
