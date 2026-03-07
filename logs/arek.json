@@ -5,72 +5,420 @@
       "day": "Sat",
       "date": "2026-03-03",
       "lifts": [
-        {"name": "Squat", "sets": [50, 57.5, 65], "reps": [5, 5, 5]},
-        {"name": "Bench", "sets": [40, 47.5, 52.5], "reps": [5, 5, 5]},
-        {"name": "Deadlift", "sets": [47.5, 55, 60], "reps": [5, 5, 5]},
-        {"name": "OHP", "sets": [22.5, 27.5, 30], "reps": [5, 5, 5]}
+        {
+          "name": "Squat",
+          "sets": [
+            50,
+            57.5,
+            65
+          ],
+          "reps": [
+            5,
+            5,
+            5
+          ]
+        },
+        {
+          "name": "Bench",
+          "sets": [
+            40,
+            47.5,
+            52.5
+          ],
+          "reps": [
+            5,
+            5,
+            5
+          ]
+        },
+        {
+          "name": "Deadlift",
+          "sets": [
+            47.5,
+            55,
+            60
+          ],
+          "reps": [
+            5,
+            5,
+            5
+          ]
+        },
+        {
+          "name": "OHP",
+          "sets": [
+            22.5,
+            27.5,
+            30
+          ],
+          "reps": [
+            5,
+            5,
+            5
+          ]
+        }
       ],
-      "pullups": {"sets": 5, "reps": [5, 5, 5, 5, 5], "total": 25}
+      "pullups": {
+        "sets": 5,
+        "reps": [
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "total": 25
+      }
     },
     {
       "week": 1,
       "day": "Thu",
       "date": "2026-03-03",
       "lifts": [
-        {"name": "Squat", "sets": [50, 57.5, 65], "reps": [5, 5, 6]},
-        {"name": "Bench", "sets": [40, 47.5, 52.5], "reps": [5, 5, 7]},
-        {"name": "Deadlift", "sets": [47.5, 55, 60], "reps": [5, 5, 6]},
-        {"name": "OHP", "sets": [22.5, 27.5, 30], "reps": [5, 5, 6]}
+        {
+          "name": "Squat",
+          "sets": [
+            50,
+            57.5,
+            65
+          ],
+          "reps": [
+            5,
+            5,
+            6
+          ]
+        },
+        {
+          "name": "Bench",
+          "sets": [
+            40,
+            47.5,
+            52.5
+          ],
+          "reps": [
+            5,
+            5,
+            7
+          ]
+        },
+        {
+          "name": "Deadlift",
+          "sets": [
+            47.5,
+            55,
+            60
+          ],
+          "reps": [
+            5,
+            5,
+            6
+          ]
+        },
+        {
+          "name": "OHP",
+          "sets": [
+            22.5,
+            27.5,
+            30
+          ],
+          "reps": [
+            5,
+            5,
+            6
+          ]
+        }
       ],
-      "pullups": {"sets": 5, "reps": [5, 5, 5, 5, 5], "total": 25}
-    },
-    {
-      "week": 1,
-      "day": "Tue",
-      "date": "2026-03-03",
-      "lifts": [
-        {"name": "Squat", "sets": [50, 57.5, 65], "reps": [5, 5, 7]},
-        {"name": "Bench", "sets": [40, 47.5, 52.5], "reps": [5, 5, 7]},
-        {"name": "Deadlift", "sets": [47.5, 55, 60], "reps": [5, 5, 7]},
-        {"name": "OHP", "sets": [22.5, 27.5, 30], "reps": [5, 5, 7]}
-      ],
-      "pullups": {"sets": 5, "reps": [5, 5, 5, 5, 5], "total": 25}
+      "pullups": {
+        "sets": 5,
+        "reps": [
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "total": 25
+      }
     },
     {
       "week": 2,
       "day": "Tue",
       "date": "2026-03-04",
       "lifts": [
-        {"name": "Squat", "sets": [55, 62.5, 70], "reps": [5, 5, 8]},
-        {"name": "Bench", "sets": [45, 50, 57.5], "reps": [5, 5, 7]},
-        {"name": "Deadlift", "sets": [50, 57.5, 65], "reps": [5, 5, 6]},
-        {"name": "OHP", "sets": [25, 30, 32.5], "reps": [5, 5, 7]}
+        {
+          "name": "Squat",
+          "sets": [
+            55,
+            62.5,
+            70
+          ],
+          "reps": [
+            5,
+            5,
+            8
+          ]
+        },
+        {
+          "name": "Bench",
+          "sets": [
+            45,
+            50,
+            57.5
+          ],
+          "reps": [
+            5,
+            5,
+            7
+          ]
+        },
+        {
+          "name": "Deadlift",
+          "sets": [
+            50,
+            57.5,
+            65
+          ],
+          "reps": [
+            5,
+            5,
+            6
+          ]
+        },
+        {
+          "name": "OHP",
+          "sets": [
+            25,
+            30,
+            32.5
+          ],
+          "reps": [
+            5,
+            5,
+            7
+          ]
+        }
       ],
-      "pullups": {"sets": 5, "reps": [5, 5, 5, 5, 5], "total": 25}
+      "pullups": {
+        "sets": 5,
+        "reps": [
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "total": 25
+      }
     },
     {
       "week": 2,
       "day": "Thu",
       "date": "2026-03-04",
       "lifts": [
-        {"name": "Squat", "sets": [55, 62.5, 70], "reps": [3, 3, 6]},
-        {"name": "Bench", "sets": [45, 50, 57.5], "reps": [3, 3, 8]},
-        {"name": "Deadlift", "sets": [50, 57.5, 65], "reps": [3, 3, 7]},
-        {"name": "OHP", "sets": [25, 30, 32.5], "reps": [3, 3, 10]}
+        {
+          "name": "Squat",
+          "sets": [
+            55,
+            62.5,
+            70
+          ],
+          "reps": [
+            3,
+            3,
+            6
+          ]
+        },
+        {
+          "name": "Bench",
+          "sets": [
+            45,
+            50,
+            57.5
+          ],
+          "reps": [
+            3,
+            3,
+            8
+          ]
+        },
+        {
+          "name": "Deadlift",
+          "sets": [
+            50,
+            57.5,
+            65
+          ],
+          "reps": [
+            3,
+            3,
+            7
+          ]
+        },
+        {
+          "name": "OHP",
+          "sets": [
+            25,
+            30,
+            32.5
+          ],
+          "reps": [
+            3,
+            3,
+            10
+          ]
+        }
       ],
-      "pullups": {"sets": 5, "reps": [6, 6, 6, 6, 6], "total": 30}
+      "pullups": {
+        "sets": 5,
+        "reps": [
+          6,
+          6,
+          6,
+          6,
+          6
+        ],
+        "total": 30
+      }
     },
     {
       "week": 2,
       "day": "Sat",
       "date": "2026-03-07",
       "lifts": [
-        {"name": "Squat", "sets": [55, 62.5, 70], "reps": [3, 3, 6]},
-        {"name": "Bench", "sets": [45, 50, 57.5], "reps": [3, 3, 5]},
-        {"name": "Deadlift", "sets": [50, 57.5, 65], "reps": [3, 3, 5]},
-        {"name": "OHP", "sets": [25, 30, 32.5], "reps": [3, 3, 10]}
+        {
+          "name": "Squat",
+          "sets": [
+            55,
+            62.5,
+            70
+          ],
+          "reps": [
+            3,
+            3,
+            6
+          ]
+        },
+        {
+          "name": "Bench",
+          "sets": [
+            45,
+            50,
+            57.5
+          ],
+          "reps": [
+            3,
+            3,
+            5
+          ]
+        },
+        {
+          "name": "Deadlift",
+          "sets": [
+            50,
+            57.5,
+            65
+          ],
+          "reps": [
+            3,
+            3,
+            5
+          ]
+        },
+        {
+          "name": "OHP",
+          "sets": [
+            25,
+            30,
+            32.5
+          ],
+          "reps": [
+            3,
+            3,
+            10
+          ]
+        }
       ],
-      "pullups": {"sets": 5, "reps": [6, 6, 6, 6, 8], "total": 32}
+      "pullups": {
+        "sets": 5,
+        "reps": [
+          6,
+          6,
+          6,
+          6,
+          8
+        ],
+        "total": 32
+      }
+    },
+    {
+      "week": 1,
+      "day": "Tue",
+      "date": "2026-03-07",
+      "lifts": [
+        {
+          "name": "Squat",
+          "sets": [
+            47.5,
+            55,
+            62.5
+          ],
+          "reps": [
+            5,
+            5,
+            7
+          ]
+        },
+        {
+          "name": "Bench",
+          "sets": [
+            35,
+            40,
+            47.5
+          ],
+          "reps": [
+            5,
+            5,
+            7
+          ]
+        },
+        {
+          "name": "Deadlift",
+          "sets": [
+            47.5,
+            55,
+            62.5
+          ],
+          "reps": [
+            5,
+            5,
+            7
+          ]
+        },
+        {
+          "name": "OHP",
+          "sets": [
+            20,
+            25,
+            27.5
+          ],
+          "reps": [
+            5,
+            5,
+            7
+          ]
+        }
+      ],
+      "pullups": {
+        "sets": 5,
+        "reps": [
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "total": 25
+      }
     }
   ]
 }
