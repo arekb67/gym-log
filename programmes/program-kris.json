@@ -1,0 +1,112 @@
+{
+  "weeks": [
+    { "w":1,  "cycle":1, "type":"Week 1 — 5s",      "deload":false,
+      "lifts":[
+        { "name":"Squat",    "sets":[{"kg":47.5,"t":"5"},{"kg":55,"t":"5"},{"kg":62.5,"t":"5+"}] },
+        { "name":"Bench",    "sets":[{"kg":35,"t":"5"},{"kg":40,"t":"5"},{"kg":47.5,"t":"5+"}] },
+        { "name":"Deadlift", "sets":[{"kg":47.5,"t":"5"},{"kg":55,"t":"5"},{"kg":62.5,"t":"5+"}] },
+        { "name":"OHP",      "sets":[{"kg":20,"t":"5"},{"kg":25,"t":"5"},{"kg":27.5,"t":"5+"}] }
+      ],
+      "pu":{ "sets":5, "note":"5×5 reps", "bands":["Thick Band","Thick Band","Thick Band","Thick Band","Thick Band"] }
+    },
+    { "w":2,  "cycle":1, "type":"Week 2 — 3s",      "deload":false,
+      "lifts":[
+        { "name":"Squat",    "sets":[{"kg":50,"t":"3"},{"kg":57.5,"t":"3"},{"kg":65,"t":"3+"}] },
+        { "name":"Bench",    "sets":[{"kg":37.5,"t":"3"},{"kg":45,"t":"3"},{"kg":50,"t":"3+"}] },
+        { "name":"Deadlift", "sets":[{"kg":50,"t":"3"},{"kg":57.5,"t":"3"},{"kg":65,"t":"3+"}] },
+        { "name":"OHP",      "sets":[{"kg":22.5,"t":"3"},{"kg":25,"t":"3"},{"kg":30,"t":"3+"}] }
+      ],
+      "pu":{ "sets":5, "note":"5×6 reps", "bands":["Thick Band","Thick Band","Thick Band","Thick Band","Thick Band"] }
+    },
+    { "w":3,  "cycle":1, "type":"Week 3 — 5/3/1",   "deload":false,
+      "lifts":[
+        { "name":"Squat",    "sets":[{"kg":55,"t":"5"},{"kg":62.5,"t":"3"},{"kg":70,"t":"1+"}] },
+        { "name":"Bench",    "sets":[{"kg":40,"t":"5"},{"kg":47.5,"t":"3"},{"kg":52.5,"t":"1+"}] },
+        { "name":"Deadlift", "sets":[{"kg":55,"t":"5"},{"kg":62.5,"t":"3"},{"kg":70,"t":"1+"}] },
+        { "name":"OHP",      "sets":[{"kg":25,"t":"5"},{"kg":27.5,"t":"3"},{"kg":30,"t":"1+"}] }
+      ],
+      "pu":{ "sets":5, "note":"5×6 reps — reduce assist", "bands":["Medium Band","Medium Band","Medium Band","Thick Band","Thick Band"] }
+    },
+    { "w":4,  "cycle":1, "type":"Week 4 — Deload",  "deload":true,
+      "lifts":[
+        { "name":"Squat",    "sets":[{"kg":30,"t":"5"},{"kg":37.5,"t":"5"},{"kg":45,"t":"5"}] },
+        { "name":"Bench",    "sets":[{"kg":25,"t":"5"},{"kg":32.5,"t":"5"},{"kg":37.5,"t":"5"}] },
+        { "name":"Deadlift", "sets":[{"kg":30,"t":"5"},{"kg":35,"t":"5"},{"kg":42.5,"t":"5"}] },
+        { "name":"OHP",      "sets":[{"kg":15,"t":"5"},{"kg":17.5,"t":"5"},{"kg":22.5,"t":"5"}] }
+      ],
+      "pu":{ "sets":3, "note":"3×5 reps — easy", "bands":["Thick Band","Thick Band","Thick Band","Thick Band","Thick Band"] }
+    },
+    { "w":5,  "cycle":2, "type":"Week 5 — 5s",      "deload":false,
+      "lifts":[
+        { "name":"Squat",    "sets":[{"kg":55,"t":"5"},{"kg":65,"t":"5"},{"kg":72.5,"t":"5+"}] },
+        { "name":"Bench",    "sets":[{"kg":42.5,"t":"5"},{"kg":50,"t":"5"},{"kg":55,"t":"5+"}] },
+        { "name":"Deadlift", "sets":[{"kg":57.5,"t":"5"},{"kg":67.5,"t":"5"},{"kg":77.5,"t":"5+"}] },
+        { "name":"OHP",      "sets":[{"kg":25,"t":"5"},{"kg":27.5,"t":"5"},{"kg":32.5,"t":"5+"}] }
+      ],
+      "pu":{ "sets":5, "note":"5×7 reps", "bands":["Medium Band","Medium Band","Medium Band","Medium Band","Medium Band"] }
+    },
+    { "w":6,  "cycle":2, "type":"Week 6 — 3s",      "deload":false,
+      "lifts":[
+        { "name":"Squat",    "sets":[{"kg":60,"t":"3"},{"kg":67.5,"t":"3"},{"kg":77.5,"t":"3+"}] },
+        { "name":"Bench",    "sets":[{"kg":45,"t":"3"},{"kg":52.5,"t":"3"},{"kg":57.5,"t":"3+"}] },
+        { "name":"Deadlift", "sets":[{"kg":62.5,"t":"3"},{"kg":72.5,"t":"3"},{"kg":80,"t":"3+"}] },
+        { "name":"OHP",      "sets":[{"kg":25,"t":"3"},{"kg":30,"t":"3"},{"kg":35,"t":"3+"}] }
+      ],
+      "pu":{ "sets":5, "note":"5×7 reps", "bands":["Light Band","Light Band","Medium Band","Medium Band","Medium Band"] }
+    },
+    { "w":7,  "cycle":2, "type":"Week 7 — 5/3/1",   "deload":false,
+      "lifts":[
+        { "name":"Squat",    "sets":[{"kg":65,"t":"5"},{"kg":72.5,"t":"3"},{"kg":80,"t":"1+"}] },
+        { "name":"Bench",    "sets":[{"kg":50,"t":"5"},{"kg":55,"t":"3"},{"kg":62.5,"t":"1+"}] },
+        { "name":"Deadlift", "sets":[{"kg":67.5,"t":"5"},{"kg":77.5,"t":"3"},{"kg":85,"t":"1+"}] },
+        { "name":"OHP",      "sets":[{"kg":27.5,"t":"5"},{"kg":32.5,"t":"3"},{"kg":35,"t":"1+"}] }
+      ],
+      "pu":{ "sets":5, "note":"5×7 reps — reduce assist", "bands":["Light Band","Light Band","Light Band","Light Band","Medium Band"] }
+    },
+    { "w":8,  "cycle":2, "type":"Week 8 — Deload",  "deload":true,
+      "lifts":[
+        { "name":"Squat",    "sets":[{"kg":35,"t":"5"},{"kg":45,"t":"5"},{"kg":52.5,"t":"5"}] },
+        { "name":"Bench",    "sets":[{"kg":30,"t":"5"},{"kg":37.5,"t":"5"},{"kg":45,"t":"5"}] },
+        { "name":"Deadlift", "sets":[{"kg":37.5,"t":"5"},{"kg":42.5,"t":"5"},{"kg":52.5,"t":"5"}] },
+        { "name":"OHP",      "sets":[{"kg":17.5,"t":"5"},{"kg":20,"t":"5"},{"kg":25,"t":"5"}] }
+      ],
+      "pu":{ "sets":3, "note":"3×7 reps — easy", "bands":["Medium Band","Medium Band","Medium Band","Medium Band","Medium Band"] }
+    },
+    { "w":9,  "cycle":3, "type":"Week 9 — 5s",      "deload":false,
+      "lifts":[
+        { "name":"Squat",    "sets":[{"kg":65,"t":"5"},{"kg":75,"t":"5"},{"kg":85,"t":"5+"}] },
+        { "name":"Bench",    "sets":[{"kg":47.5,"t":"5"},{"kg":55,"t":"5"},{"kg":62.5,"t":"5+"}] },
+        { "name":"Deadlift", "sets":[{"kg":67.5,"t":"5"},{"kg":80,"t":"5"},{"kg":90,"t":"5+"}] },
+        { "name":"OHP",      "sets":[{"kg":27.5,"t":"5"},{"kg":32.5,"t":"5"},{"kg":35,"t":"5+"}] }
+      ],
+      "pu":{ "sets":5, "note":"5×8 reps", "bands":["BW","BW","Light Band","Light Band","Light Band"] }
+    },
+    { "w":10, "cycle":3, "type":"Week 10 — 3s",     "deload":false,
+      "lifts":[
+        { "name":"Squat",    "sets":[{"kg":70,"t":"3"},{"kg":80,"t":"3"},{"kg":90,"t":"3+"}] },
+        { "name":"Bench",    "sets":[{"kg":50,"t":"3"},{"kg":57.5,"t":"3"},{"kg":65,"t":"3+"}] },
+        { "name":"Deadlift", "sets":[{"kg":72.5,"t":"3"},{"kg":85,"t":"3"},{"kg":95,"t":"3+"}] },
+        { "name":"OHP",      "sets":[{"kg":30,"t":"3"},{"kg":35,"t":"3"},{"kg":37.5,"t":"3+"}] }
+      ],
+      "pu":{ "sets":5, "note":"5×8 reps", "bands":["BW","BW","BW","Light Band","Light Band"] }
+    },
+    { "w":11, "cycle":3, "type":"Week 11 — Peak",   "deload":false,
+      "lifts":[
+        { "name":"Squat",    "sets":[{"kg":75,"t":"5"},{"kg":85,"t":"3"},{"kg":95,"t":"1+"}] },
+        { "name":"Bench",    "sets":[{"kg":55,"t":"5"},{"kg":62.5,"t":"3"},{"kg":70,"t":"1+"}] },
+        { "name":"Deadlift", "sets":[{"kg":80,"t":"5"},{"kg":90,"t":"3"},{"kg":100,"t":"1+"}] },
+        { "name":"OHP",      "sets":[{"kg":32.5,"t":"5"},{"kg":35,"t":"3"},{"kg":40,"t":"1+"}] }
+      ],
+      "pu":{ "sets":5, "note":"5×8 reps — reduce assist", "bands":["BW","BW","BW","BW","BW"] }
+    },
+    { "w":12, "cycle":3, "type":"Week 12 — Deload", "deload":true,
+      "lifts":[
+        { "name":"Squat",    "sets":[{"kg":42.5,"t":"5"},{"kg":52.5,"t":"5"},{"kg":62.5,"t":"5"}] },
+        { "name":"Bench",    "sets":[{"kg":32.5,"t":"5"},{"kg":42.5,"t":"5"},{"kg":50,"t":"5"}] },
+        { "name":"Deadlift", "sets":[{"kg":42.5,"t":"5"},{"kg":50,"t":"5"},{"kg":62.5,"t":"5"}] },
+        { "name":"OHP",      "sets":[{"kg":20,"t":"5"},{"kg":22.5,"t":"5"},{"kg":30,"t":"5"}] }
+      ],
+      "pu":{ "sets":3, "note":"3×8 reps", "bands":["Light Band","Light Band","Light Band","Light Band","Light Band"] }
+    }
+  ]
+}

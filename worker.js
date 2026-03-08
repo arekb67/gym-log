@@ -33,6 +33,20 @@ export default {
       });
     }
 
+    // GET /programme?user=arek — load user's programme
+    if (request.method === 'GET' && url.pathname === '/programme') {
+      const username = url.searchParams.get('user')?.toLowerCase();
+      if (!username || !USERS[username]) {
+        return new Response(JSON.stringify({ weeks: [] }), {
+          headers: { ...CORS, 'Content-Type': 'application/json' }
+        });
+      }
+      const data = await githubGet(env.GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, `programmes/program-${username}.json`, { weeks: [] });
+      return new Response(JSON.stringify(data), {
+        headers: { ...CORS, 'Content-Type': 'application/json' }
+      });
+    }
+
     // GET /?user=arek — load user's log
     if (request.method === 'GET') {
       const username = url.searchParams.get('user')?.toLowerCase();
@@ -41,7 +55,7 @@ export default {
           headers: { ...CORS, 'Content-Type': 'application/json' }
         });
       }
-      const data = await githubGet(env.GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, `logs/${username}.json`);
+      const data = await githubGet(env.GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, `logs/data-${username}.json`, { sessions: [] });
       return new Response(JSON.stringify(data), {
         headers: { ...CORS, 'Content-Type': 'application/json' }
       });
@@ -56,7 +70,7 @@ export default {
           status: 400, headers: { ...CORS, 'Content-Type': 'application/json' }
         });
       }
-      const ok = await githubPut(env.GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, `logs/${username}.json`, body.data);
+      const ok = await githubPut(env.GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, `logs/data-${username}.json`, body.data);
       return new Response(JSON.stringify({ ok }), {
         headers: { ...CORS, 'Content-Type': 'application/json' }
       });
@@ -66,11 +80,11 @@ export default {
   }
 };
 
-async function githubGet(token, owner, repo, path) {
+async function githubGet(token, owner, repo, path, fallback) {
   const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
     headers: { Authorization: `token ${token}`, 'User-Agent': 'gym-log-worker' }
   });
-  if (!res.ok) return { sessions: [] };
+  if (!res.ok) return fallback || {};
   const file = await res.json();
   return JSON.parse(atob(file.content.replace(/\n/g, '')));
 }
