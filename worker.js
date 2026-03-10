@@ -86,7 +86,10 @@ async function githubGet(token, owner, repo, path, fallback) {
   });
   if (!res.ok) return fallback || {};
   const file = await res.json();
-  return JSON.parse(atob(file.content.replace(/\n/g, '')));
+  const binary = atob(file.content.replace(/\n/g, ''));
+  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+  const text = new TextDecoder().decode(bytes);
+  return JSON.parse(text);
 }
 
 async function githubPut(token, owner, repo, path, data) {
