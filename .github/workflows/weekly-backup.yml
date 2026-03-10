@@ -1,0 +1,48 @@
+name: Weekly Log Backup
+
+  on:
+    schedule:
+      # Runs every Sunday at 09:00 UTC (09:00 GMT / 10:00 BST)
+      - cron: '0 9 * * 0'
+    workflow_dispatch:  # Allows manual trigger from GitHub Actions tab
+
+  jobs:
+    backup:
+      runs-on: ubuntu-latest
+      permissions:
+        contents: write
+
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+
+        - name: Create backup archive
+          run: |
+            DATE=$(date +%Y%m%d)
+            mkdir -p backup-staging
+            cp logs/*.json backup-staging/
+            cp programmes/*.json backup-staging/
+            tar -czf "gym-log-backup-${DATE}.tar.gz" -C backup-staging .
+            echo "BACKUP_DATE=${DATE}" >> "$GITHUB_ENV"
+            echo "Backup archive created: gym-log-backup-${DATE}.tar.gz"
+            echo "Contents:"
+            tar -tzf "gym-log-backup-${DATE}.tar.gz"
+
+        - name: Create release
+          uses: softprops/action-gh-release@v2
+          with:
+            tag_name: backup-${{ env.BACKUP_DATE }}
+            name: Weekly Backup — ${{ env.BACKUP_DATE }}
+            body: |
+              Automated weekly backup of training logs and programme files.
+
+              **Date:** ${{ env.BACKUP_DATE }}
+
+              **Files included:**
+              - `logs/data-arek.json`
+              - `logs/data-kris.json`
+              - `logs/data-diana.json`
+              - `programmes/program-arek.json`
+              - `programmes/program-kris.json`
+              - `programmes/program-diana.json`
+            files: gym-log-backup-${{ env.BACKUP_DATE }}.tar.gz
