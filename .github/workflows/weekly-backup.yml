@@ -28,7 +28,7 @@ jobs:
             tar -tzf "gym-log-backup-${DATE}.tar.gz"
 
         - name: Create release
-          uses: softprops/action-gh-release@v3
+          uses: softprops/action-gh-release@v2
           with:
             tag_name: backup-${{ env.BACKUP_DATE }}
             name: Weekly Backup — ${{ env.BACKUP_DATE }}
