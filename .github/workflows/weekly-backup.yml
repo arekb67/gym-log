@@ -13,7 +13,7 @@ jobs:
 
       steps:
         - name: Checkout repository
-          uses: actions/checkout@v4
+          uses: actions/checkout@v5
 
         - name: Create backup archive
           run: |
@@ -28,7 +28,7 @@ jobs:
             tar -tzf "gym-log-backup-${DATE}.tar.gz"
 
         - name: Create release
-          uses: softprops/action-gh-release@v2
+          uses: softprops/action-gh-release@v3
           with:
             tag_name: backup-${{ env.BACKUP_DATE }}
             name: Weekly Backup — ${{ env.BACKUP_DATE }}
