@@ -1323,6 +1323,76 @@
         ],
         "total": 35
       }
+    },
+    {
+      "week": 7,
+      "day": "Sat",
+      "date": "2026-04-30",
+      "lifts": [
+        {
+          "name": "Squat",
+          "sets": [
+            65,
+            72.5,
+            80
+          ],
+          "reps": [
+            10,
+            10,
+            10
+          ]
+        },
+        {
+          "name": "Bench",
+          "sets": [
+            50,
+            55,
+            62.5
+          ],
+          "reps": [
+            10,
+            10,
+            8
+          ]
+        },
+        {
+          "name": "Deadlift",
+          "sets": [
+            67.5,
+            77.5,
+            85
+          ],
+          "reps": [
+            10,
+            10,
+            null
+          ]
+        },
+        {
+          "name": "OHP",
+          "sets": [
+            27.5,
+            32.5,
+            35
+          ],
+          "reps": [
+            null,
+            null,
+            null
+          ]
+        }
+      ],
+      "pullups": {
+        "sets": 5,
+        "reps": [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "total": 0
+      }
     }
   ]
 }
